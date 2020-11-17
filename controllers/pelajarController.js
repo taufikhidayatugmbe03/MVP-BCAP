@@ -11,8 +11,13 @@ const pelajarRouter = express.Router();
 pelajarRouter.post('/register', async (req, res) => {
   try{
       const{
-          jenis_pengguna,
-    pelajarname,
+          nama,
+          username,
+          alamat,
+          no_telp,
+          email,
+          tempat_lahir,
+          tanggal_lahir,
           password
       } = req.body;
 
@@ -20,14 +25,19 @@ pelajarRouter.post('/register', async (req, res) => {
       var saltRounds = 10;
       const hashedPw = await bcrypt.hash(password, saltRounds);
 
-      conpelajar = await User.findOne({username})
-      if (user){res.status(400).json({error:"Username already taken"})
+      const pelajar = await User.findOne({username})
+      if (pelajar){res.status(400).json({error:"Username already taken"})
       return
       }
 
       const newUser = new User({
-          "jenis_pengguna":jenis_pengguna,
+          "nama":nama,
           "username":username,
+          "alamat": alamat,
+          "no_telp": no_telp,
+          "email": email,
+          "tempat_lahir": tempat_lahir,
+          "tanggal_lahir": tanggal_lahir,
           "password": hashedPw
       });
 
@@ -43,17 +53,17 @@ pelajarRouter.post('/register', async (req, res) => {
 
 pelajarRouter.get('/login', async(req,res)=>{
  
-    const user = await User.findOne({username : req.body.username})
-    console.log(user)
-    if (!user) return res.status(400).json({ error: "Username is wrong" })
-      const validPassword = await bcrypt.compare(req.body.password, user.password)
+    const pelajar = await User.findOne({username : req.body.username})
+    console.log(pelajar)
+    if (!pelajar) return res.status(400).json({ error: "Username is wrong" })
+      const validPassword = await bcrypt.compare(req.body.password, pelajar.password)
       if (!validPassword)
       return res.status(400).json({ error: "Password is wrong" })
       const token = jwt.sign(
           // payload data
       {
-          username: user.username,
-          id: user._id
+          username: pelajar.username,
+          id: pelajar._id
       },
       process.env.TOKEN_SECRET,{expiresIn: "5 m"}
       )

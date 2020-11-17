@@ -1,14 +1,14 @@
 import mongoose from 'mongoose'
 
-const pelajarSchema = mongoose.Schema(
+const userSchema = mongoose.Schema(
   {
-    id_pelajar: {
+    nama: {
       type: String,
       required: true,
     },
-    nama_pelajar: {
+    username: {
       type: String,
-      required: true,
+      required: true
     },
     alamat: {
       type: String,
@@ -22,10 +22,6 @@ const pelajarSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    wilayah: {
-      type: String,
-      required:true
-    },
     tempat_lahir: {
       type: String,
       required:true
@@ -34,12 +30,16 @@ const pelajarSchema = mongoose.Schema(
       type: Date,
       required:true
     },
+    password: {
+      type: String,
+      required: true
+    }
   },
   {
     timestamps: true,
   }
 )
 
-const Pelajar = mongoose.model('Pelajar', pelajarSchema)
+const Pelajar = mongoose.model('Pelajar', userSchema)
 
 export default Pelajar

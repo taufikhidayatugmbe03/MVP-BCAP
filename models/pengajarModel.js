@@ -2,11 +2,11 @@ import mongoose from 'mongoose'
 
 const pengajarSchema = mongoose.Schema(
   {
-    id_guru: {
+    nama: {
       type: String,
       required: true,
     },
-    nama_guru: {
+    username: {
       type: String,
       required: true,
     },
@@ -18,17 +18,9 @@ const pengajarSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    deskripsi: {
-      type: String,
-      required: true,
-    },
     email: {
       type: String,
       required: true,
-    },
-    wilayah: {
-      type: String,
-      required:true
     },
     tempat_lahir: {
       type: String,
@@ -38,13 +30,17 @@ const pengajarSchema = mongoose.Schema(
       type: Date,
       required:true
     },
-    tarif_mengajar: {
+    password: {
       type: String,
-      required:true
+      required: true,
     },
-    deskripsi_available: {
+    keahlian: {
       type: String,
-      required:true
+      required: true,
+    },
+    deskripsi: {
+      type: String,
+      required: true,
     },
   },
   {
