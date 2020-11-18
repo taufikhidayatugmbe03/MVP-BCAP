@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import morgan from 'morgan'
 import pelajarRouter from './controllers/pelajarController.js'
 import pengajarRouter from './controllers/pengajarController.js'
+import kelasRouter from './controllers/kelasController.js'
 import verifytoken from './auth/validate-token.js'
 
 const app = express()
@@ -33,6 +34,7 @@ app.get('/', (req, res, next) => {
 // app.use('/api', router)
 app.use('/api/pelajar', pelajarRouter)
 app.use('/api/pengajar', pengajarRouter)
+app.use('/api/pengajar/kelas', verifytoken, kelasRouter)
 
 var port = process.env.PORT || 8000;
 app.listen(port, () => {
