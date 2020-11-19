@@ -75,20 +75,37 @@ pelajarRouter.get('/login', async(req,res)=>{
       })
   })
 
-  //Update password
-  pelajarRouter.put('/update/:id', async (req,res,next) => {
-    const {error} = User(req.body);
-    if(error) return res.status(400).send(error.details[0].message);
+pelajarRouter.put('/update/:id', async (req,res) => {
 
-    const user = await User.findById(req.params.id);
-    if(!user) return res.status(404).send('User account not found.');
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(req.body.password, salt);
-
-    user.save();
-    res.status(200).json('Success')
-});
+    //header apabila akan melakukan akses
+    var token = req.headers['auth-token'];
+    if (!token) return res.status(401).send({ auth: false, message: 'No token provided.' });
+                const {nama, username, alamat, no_telp, email, tempat_lahir, tanggal_lahir, password} = req.body;
+    
+                const user = await User.findById(req.params.id);
+            
+                if (user) {
+            
+                    var saltRounds = 10;
+                    const hashedPw = await bcrypt.hash(password, saltRounds);
+                    user.nama = nama;
+                    user.username = username;
+                    user.alamat = alamat;
+                    user.no_telp = no_telp;
+                    user.email = email;
+                    user.tempat_lahir = tempat_lahir;
+                    user.tanggal_lahir = tanggal_lahir;
+                    user.password = hashedPw;
+            
+                    const updateDatauser = await user.save()
+            
+                    res.send(updateDatauser);
+                } else {
+                    res.status(404).json({
+                        message: 'User not found'
+                    })
+            }
+        })
 
 //Logout
 pelajarRouter.get('/logout', async(req,res)=>{
