@@ -1,13 +1,22 @@
 import User from '../models/pelajarModel.js';
+import {EnrolKelas,PelajarJoined} from '../models/kelasModel.js';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 
 const pelajarRouter = express.Router();
+pelajarRouter.use(bodyParser.json()); // support json encoded bodies
+pelajarRouter.use(bodyParser.urlencoded({ extended: true }));
+
+
 
 //@desc add new user
 //@route POST/api/user/add
+pelajarRouter.get('/list', async (req, res) => {
+    const h = await User.find();
+    res.status(200).json(h);
+});
 pelajarRouter.post('/register', async (req, res) => {
   try{
       const{
@@ -51,21 +60,22 @@ pelajarRouter.post('/register', async (req, res) => {
   }
 })
 
-pelajarRouter.get('/login', async(req,res)=>{
- 
+pelajarRouter.post('/login', async(req,res)=>{
+
     const pelajar = await User.findOne({username : req.body.username})
-    console.log(pelajar)
-    if (!pelajar) return res.status(400).json({ error: "Username is wrong" })
+    console.log(req.body.username)
+    if (!pelajar) return res.status(400).json({ error: "Username is wrong ="+req.body.username })
       const validPassword = await bcrypt.compare(req.body.password, pelajar.password)
       if (!validPassword)
-      return res.status(400).json({ error: "Password is wrong" })
+      return res.status(400).json({ error: "Password is wrong ="+req.body.username })
       const token = jwt.sign(
           // payload data
       {
           username: pelajar.username,
-          id: pelajar._id
+          id: pelajar._id,
+          roles:0,
       },
-      process.env.TOKEN_SECRET,{expiresIn: "5 m"}
+      process.env.TOKEN_SECRET,{expiresIn: "7120 m"}
       )
       res.status(200).json({
       error: null,
@@ -94,7 +104,35 @@ pelajarRouter.get('/login', async(req,res)=>{
 pelajarRouter.get('/logout', async(req,res)=>{
     const token = null
     res.status(200).send({ auth: false, token: token });
-  })
+})
+pelajarRouter.post('/kelas/register',async(req,res)=>{
+    const {
+      idenrol
+    } = req.body;
+
+    const token = req.header('auth-token');
+    const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+
+    const newPelajar = [verified.id];
+    const follow = EnrolKelas.updateOne({_id:idenrol},{
+      $push:{
+        pelajar:newPelajar,
+      }
+    }).then((r)=>{
+        const j = new PelajarJoined({
+            idEnrolkelas:idenrol,
+            pelajar:verified.id,
+            status:true,
+            feedbacks:[],
+            mark:0,
+        })
+        const save = j.save();
+        res.status(200).json('Success')
+
+
+    })
+
+})
 
 
 export default pelajarRouter;

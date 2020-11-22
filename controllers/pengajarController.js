@@ -6,8 +6,12 @@ import jwt from 'jsonwebtoken';
 
 const pengajarRouter = express.Router();
 
+pengajarRouter.use(bodyParser.json()); // support json encoded bodies
+pengajarRouter.use(bodyParser.urlencoded({ extended: true }));
+
+
 //@desc add new user
-//@route POST/api/user/add
+//@route POST/api/user/ad
 pengajarRouter.post('/register', async (req, res) => {
   try{
       const{
@@ -55,21 +59,22 @@ pengajarRouter.post('/register', async (req, res) => {
   }
 })
 
-pengajarRouter.get('/login', async(req,res)=>{
- 
+pengajarRouter.post('/login', async(req,res)=>{
+
     const pengajar = await User.findOne({username : req.body.username})
     console.log(pengajar)
-    if (!pengajar) return res.status(400).json({ error: "Username is wrong" })
+    if (!pengajar) return res.status(400).json({ error: "Username is wrong = "+req.body.username })
       const validPassword = await bcrypt.compare(req.body.password, pengajar.password)
       if (!validPassword)
-      return res.status(400).json({ error: "Password is wrong" })
+      return res.status(400).json({ error: "Password is wrong= "+req.body.username })
       const token = jwt.sign(
           // payload data
       {
           username: pengajar.username,
-          id: pengajar._id
+          id: pengajar._id,
+          roles:1,
       },
-      process.env.TOKEN_SECRET,{expiresIn: "5 m"}
+      process.env.TOKEN_SECRET,{expiresIn: "7120 m"}
       )
       res.status(200).json({
       error: null,
@@ -99,6 +104,21 @@ pengajarRouter.get('/logout', async(req,res)=>{
     const token = null
     res.status(200).send({ auth: false, token: token });
   })
+pengajarRouter.get('/show/:id', async(req,res)=>{
+    const token = null
+    const {id}  = req.params.id;
+    const data  = User.findById(id);
+    res.status(200).send(data);
+  })
+pengajarRouter.get('/all', async(req,res)=>{
+  try{
+    const h = await User.find();
+    res.status(200).json(h);
+
+  }catch(error){
+      res.status(500).json({ error: error})
+  }
+})
 
 
 export default pengajarRouter;
