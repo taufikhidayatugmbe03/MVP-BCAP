@@ -42,6 +42,7 @@ const pengajarSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+
   },
   {
     timestamps: true,
