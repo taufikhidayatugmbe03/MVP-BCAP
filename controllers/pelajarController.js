@@ -10,9 +10,53 @@ pelajarRouter.use(bodyParser.json()); // support json encoded bodies
 pelajarRouter.use(bodyParser.urlencoded({ extended: true }));
 
 
-
 //@desc add new user
 //@route POST/api/user/add
+pelajarRouter.get('/follow',async(req,res)=>{
+  const token = req.header('auth-token');
+  const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+  const ins = await PelajarJoined.find({pelajar:verified.id,status:true})
+  .populate({
+    path:'idEnrolkelas',
+    populate:{
+      path:'kelas',
+      populate:'authors'
+    },
+  });
+  res.status(200).json(ins);
+})
+pelajarRouter.get('/done',async(req,res)=>{
+  const token = req.header('auth-token');
+  const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+  const ins = await PelajarJoined.find({pelajar:verified.id,status:false})
+  .populate({
+    path:'idEnrolkelas',
+    populate:{
+      path:'kelas',
+      populate:'authors'
+    },
+  });
+  res.status(200).json(ins);
+})
+pelajarRouter.get('/kelas/status/:idEnrolkelas',async(req,res)=>{
+    const token = req.header('auth-token');
+    const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+    const ins = await PelajarJoined.find({pelajar:verified.id,idEnrolkelas:req.params.idEnrolkelas})
+    .populate({
+      path:'idEnrolkelas',
+      populate:'kelas',
+    });
+    res.status(200).json(ins);
+})
+pelajarRouter.put('/kelas/done',async(req,res)=>{
+    const token = req.header('auth-token');
+    const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+    const ins = await PelajarJoined.find({pelajar:verified.id,idEnrolkelas:req.body.idEnrolkelas})
+    .update({
+      status:false
+    });
+    res.status(200).json(ins);
+})
 pelajarRouter.get('/list', async (req, res) => {
     const h = await User.find();
     res.status(200).json(h);
@@ -112,25 +156,35 @@ pelajarRouter.post('/kelas/register',async(req,res)=>{
 
     const token = req.header('auth-token');
     const verified = jwt.verify(token, process.env.TOKEN_SECRET);
-
     const newPelajar = [verified.id];
-    const follow = EnrolKelas.updateOne({_id:idenrol},{
-      $push:{
-        pelajar:newPelajar,
-      }
-    }).then((r)=>{
-        const j = new PelajarJoined({
-            idEnrolkelas:idenrol,
-            pelajar:verified.id,
-            status:true,
-            feedbacks:[],
-            mark:0,
-        })
-        const save = j.save();
-        res.status(200).json('Success')
 
+    const findMe = EnrolKelas.find({_id:idenrol,pelajar:newPelajar}).then((r)=>{
+
+      if(r.length>0){
+        res.status(500).json(r);
+      }else{
+        const follow = EnrolKelas.updateOne({_id:idenrol},{
+          $push:{
+            pelajar:newPelajar,
+          }
+        }).then((r)=>{
+            const j = new PelajarJoined({
+                idEnrolkelas:idenrol,
+                pelajar:verified.id,
+                status:true,
+                feedbacks:[],
+                mark:0,
+            })
+            const save = j.save();
+            res.status(200).json('ok')
+        })
+      }
 
     })
+
+
+
+
 
 })
 

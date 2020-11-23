@@ -3,6 +3,10 @@ const Schema = mongoose.Schema;
 
 const kelasSchema = mongoose.Schema(
   {
+    kategori:{
+      type:Number,
+      required:true,
+    },
     jenis:{
       type:Number,
       required:true,

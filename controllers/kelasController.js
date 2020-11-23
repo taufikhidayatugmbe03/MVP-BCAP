@@ -23,6 +23,8 @@ kelasRouter.post('/store', async (req, res) => {
       const verified = jwt.verify(token, process.env.TOKEN_SECRET);
 
       const{
+          topics,
+          kategori,
           jenis,
           sesi,
           judul,
@@ -32,14 +34,15 @@ kelasRouter.post('/store', async (req, res) => {
       } = req.body;
 
       const kelasData = new Kelas({
+           "kategori": kategori,
            "jenis": jenis,
            "judul": judul,
-          "deskripsi": deskripsi,
-          "kapasitas": kapasitas,
-          "image":image,
-          "topics":[],
-          "comments":[],
-          "likes":[],
+           "deskripsi": deskripsi,
+           "kapasitas": kapasitas,
+           "image":image,
+           "topics":topics,
+           "comments":[],
+           "likes":[],
       });
       const createdKelas = await kelasData.save().then((r)=>{
           const authors = {
@@ -48,6 +51,14 @@ kelasRouter.post('/store', async (req, res) => {
          Kelas.updateOne({_id:r._id},authors).then((e,r)=>{
            console.log(e);
          });
+         const En = new EnrolKelas({
+           kelas:r._id,
+           tanggal:'2020-01-01',
+           pelajar:[],
+           status:1, //1 aktiv,2 berlangsung , 3 selesai
+         })
+          En.save();
+
          res.status(200).json(r);
 
 
@@ -79,6 +90,23 @@ kelasRouter.get('/kelas-saya',async(req,res)=>{
 kelasRouter.get('/show/:id',async(req,res)=>{
     try{
       const h = await  Kelas.findOne({_id:req.params.id}).populate('authors')
+      .then(dd=>{
+        res.status(200).json(dd);
+      })
+
+    }catch(error){
+        res.status(500).json({ error: error})
+    }
+})
+kelasRouter.get('/showKelasEnrol/:id',async(req,res)=>{
+    try{
+      const h = await  EnrolKelas.findOne({_id:req.params.id})
+      .populate({
+        path:'kelas',
+        populate:{
+          path:'authors'
+        },
+      })
       .then(dd=>{
         res.status(200).json(dd);
       })
@@ -169,6 +197,37 @@ kelasRouter.get('/enrolList',async(req,res)=>{
     res.status(200).json(ins);
 
 })
+kelasRouter.get('/enrol/:kelasid',async(req,res)=>{
+
+    const ins = await EnrolKelas.find({kelas:req.params.kelasid}).populate('kelas');
+    res.status(200).json(ins);
+
+})
+kelasRouter.delete('/delete/:kelasid',async(req,res)=>{
+
+    const ins = await Kelas.findOneAndDelete({_id:req.params.kelasid});
+    EnrolKelas.findOne({kelas:req.params.kelasid}).then((e)=>{
+      PelajarJoined.deleteOne({idEnrolkelas:e._id}).then((er,result)=>{
+      });
+      EnrolKelas.deleteOne({kelas:req.params.kelasid}).then((r)=>{
+        res.status(200).json(e._id);
+      })
+
+    })
+
+})
+kelasRouter.get('/tes',async(req,res)=>{
+
+  //PelajarJoined.collection.drop();
+  const c = PelajarJoined.find({}).then(e=>{
+    res.status(200).json(e);
+
+  });
+
+
+})
+
+
 kelasRouter.get('/reset',async(req,res)=>{
     try{
       Kelas.collection.drop();
