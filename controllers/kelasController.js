@@ -24,7 +24,6 @@ kelasRouter.post('/store', async (req, res) => {
 
       const{
           jenis,
-          sesi,
           judul,
           deskripsi,
           kapasitas,
@@ -183,32 +182,4 @@ kelasRouter.get('/reset',async(req,res)=>{
 
 })
 
-
-<<<<<<< HEAD
-kelasRouter.put('/update/:id', async (req,res) => {
-                const {author, tanggal, sesi, topik, detail_topik, kapasitas} = req.body;
-    
-                const user = await User.findById(req.params.id);
-            
-                if (user) {
-                    user.author = author;
-                    user.tanggal = tanggal;
-                    user.sesi = sesi;
-                    user.topik = topik;
-                    user.detail_topik = detail_topik;
-                    user.kapasitas = kapasitas;
-            
-                    const updateDatauser = await user.save()
-            
-                    res.send(updateDatauser);
-                } else {
-                    res.status(404).json({
-                        message: 'Kelas not found'
-                    })
-            }
-        })
-
 export default kelasRouter
-=======
-export default kelasRouter
->>>>>>> 3113c43e77a423e472332d1370f484438dbcbbc2
